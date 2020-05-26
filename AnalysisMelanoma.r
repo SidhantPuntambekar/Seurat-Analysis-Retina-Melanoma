@@ -1,4 +1,10 @@
 #remotes::install_github("rnabioco/clustifyr")
+<<<<<<< HEAD
+library(dplyr)
+library(Seurat)
+library(patchwork)
+=======
+>>>>>>> 508c844ae9ac5118d3e0c2ad1246c73cdb9672dd
 library(clustifyr)
 library(tidyverse)
 library(usethis)
@@ -15,3 +21,8 @@ ref_humanMelanomaDC <- average_clusters(
 )
 
 usethis::use_data(ref_humanMelanomaDC, compress = "xz", overwrite = TRUE)
+<<<<<<< HEAD
+
+melanoma <- CreateSeuratObject(counts = mat_humanMelanomaDC, project = "Melanoma", min.cells = 3, min.features = 200) 
+=======
+>>>>>>> 508c844ae9ac5118d3e0c2ad1246c73cdb9672dd
