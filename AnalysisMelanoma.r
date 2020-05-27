@@ -1,10 +1,7 @@
 #remotes::install_github("rnabioco/clustifyr")
-<<<<<<< HEAD
 library(dplyr)
 library(Seurat)
 library(patchwork)
-=======
->>>>>>> 508c844ae9ac5118d3e0c2ad1246c73cdb9672dd
 library(clustifyr)
 library(tidyverse)
 library(usethis)
@@ -21,8 +18,33 @@ ref_humanMelanomaDC <- average_clusters(
 )
 
 usethis::use_data(ref_humanMelanomaDC, compress = "xz", overwrite = TRUE)
-<<<<<<< HEAD
 
+#Preprocessing workflow
 melanoma <- CreateSeuratObject(counts = mat_humanMelanomaDC, project = "Melanoma", min.cells = 3, min.features = 200) 
-=======
->>>>>>> 508c844ae9ac5118d3e0c2ad1246c73cdb9672dd
+melanoma
+melanoma@assays$RNA@data <- melanoma@assays$RNA@counts
+melanoma[["percent.mt"]] <- PercentageFeatureSet(melanoma, pattern = "^MT")
+head(melanoma@meta.data, 5)
+VlnPlot(melanoma, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+plot1 <- FeatureScatter(melanoma, feature1 = "nCount_RNA", feature2 = "percent.mt")
+plot2 <- FeatureScatter(melanoma, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 + plot2
+melanoma <- subset(melanoma, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
+
+#Variable Features
+melanoma <- FindVariableFeatures(melanoma, selection.method = "vst", nfeatures = 2000)
+top10 <- head(VariableFeatures(melanoma), 10)
+plot1 <- VariableFeaturePlot(melanoma)
+plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
+plot1 + plot2
+
+#Linear dimension reduction
+all.genes <- rownames(melanoma)
+melanoma <- ScaleData(melanoma, features = all.genes)
+melanoma <- RunPCA(melanoma, features = VariableFeatures(object = melanoma))
+print(melanoma[["pca"]], dims = 1:5, nfeatures = 5)
+VizDimLoadings(melanoma, dims = 1:2, reduction = "pca")
+DimPlot(melanoma, reduction = "pca")
+DimHeatmap(melanoma, dims = 1, cells = 500, balanced = TRUE)
+DimHeatmap(melanoma, dims = 1:15, cells = 500, balanced = TRUE)
+
