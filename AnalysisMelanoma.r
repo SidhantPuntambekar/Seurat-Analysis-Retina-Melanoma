@@ -48,3 +48,38 @@ DimPlot(melanoma, reduction = "pca")
 DimHeatmap(melanoma, dims = 1, cells = 500, balanced = TRUE)
 DimHeatmap(melanoma, dims = 1:15, cells = 500, balanced = TRUE)
 
+#Dimensionality
+melanoma <- JackStraw(melanoma, num.replicate = 100)
+melanoma <- ScoreJackStraw(melanoma, dims = 1:20)
+JackStrawPlot(melanoma, dims = 1:15)
+ElbowPlot(melanoma)
+
+#Cluster cells
+melanoma <- FindNeighbors(melanoma, dims = 1:10)
+melanoma <- FindClusters(melanoma, resolution = 0.5)
+head(Idents(melanoma), 5)
+
+#Non-linear dimensional reduction (UMAP/tSNE)
+melanoma <- RunUMAP(melanoma, dims = 1:10)
+DimPlot(melanoma, reduction = "umap")
+
+cluster1.markers <- FindMarkers(melanoma, ident.1 = 1, min.pct = 0.25)
+head(cluster1.markers, n = 5)
+cluster5.markers <- FindMarkers(melanoma, ident.1 = 5, ident.2 = 0, min.pct = 0.25)
+head(cluster5.markers, n = 5)
+melanoma.markers <- FindAllMarkers(melanoma, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+melanoma.markers %>% group_by(cluster) %>% top_n(n = 2, wt = avg_logFC)
+cluster1.markers <- FindMarkers(melanoma, ident.1 = 0, logfc.threshold = 0.25, test.use = "roc", only.pos = TRUE)
+VlnPlot(melanoma, features = c("SPP1", "TIMP1"))
+VlnPlot(melanoma, features = c("SPP1", "TIMP1"), slot = "counts", log = TRUE)
+FeaturePlot(melanoma, features = c("SPP1", "TIMP1", "C1QA", "APOC1", "TYROBP"))
+top10 <- melanoma.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
+DoHeatmap(melanoma, features = top10$gene) + NoLegend()
+
+#Assigning cell type identity to clusters
+new.cluster.ids <- c(meta_humanMelanomaDC)
+names(new.cluster.ids) <- levels(melanoma)
+melanoma <- RenameIdents(melanoma, new.cluster.ids)
+DimPlot(melanoma, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
+head(Idents(melanoma), 5)
+
