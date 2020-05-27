@@ -77,6 +77,7 @@ top10 <- melanoma.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC
 DoHeatmap(melanoma, features = top10$gene) + NoLegend()
 
 #Assigning cell type identity to clusters
+melanoma@meta.data$annotated <- meta_humanMelanomaDC$major_cell_lineage
 new.cluster.ids <- c(meta_humanMelanomaDC)
 names(new.cluster.ids) <- levels(melanoma)
 melanoma <- RenameIdents(melanoma, new.cluster.ids)
