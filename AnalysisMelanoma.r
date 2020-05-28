@@ -91,8 +91,9 @@ all(rownames(melanoma@meta.data) == meta_humanMelanomaDC$cell_ID)
 melanoma@meta.data$annotated <- meta_humanMelanomaDC$major_cell_lineage
 head(melanoma@meta.data$annotated)
 new.cluster.ids <- melanoma@meta.data$annotated
-names(new.cluster.ids) <- levels(melanoma)
-melanoma <- RenameIdents(melanoma, new.cluster.ids)
+Idents(melanoma) <- "annotated"
+#names(new.cluster.ids) <- levels()
+#melanoma <- RenameIdents(melanoma, new.cluster.ids)
 DimPlot(melanoma, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
 head(Idents(melanoma), 5)
 
