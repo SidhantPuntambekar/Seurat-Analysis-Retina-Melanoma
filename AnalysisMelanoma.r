@@ -6,22 +6,23 @@ library(clustifyr)
 library(tidyverse)
 library(usethis)
 
-mat_humanMelanomaDC <- read_tsv("ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE137nnn/GSE137710/suppl/GSE137710_human_melanoma_counts_normalized_9315x19445.tsv.gz") %>%
-  select(-X1) %>% t()
-colnames(mat_humanMelanomaDC) <- seq_len(ncol(mat_humanMelanomaDC))
-meta_humanMelanomaDC <- read_tsv("ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE137nnn/GSE137710/suppl/GSE137710_human_melanoma_cell_metadata_9315x14.tsv.gz") %>%
-  mutate("rn" = row_number())
-ref_humanMelanomaDC <- average_clusters(
-  mat_humanMelanomaDC,
-  meta_humanMelanomaDC,
-  "cell_type"
-)
+mat_humanMelanomaDC <- read_tsv("ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE137nnn/GSE137710/suppl/GSE137710_human_melanoma_counts_normalized_9315x19445.tsv.gz") 
+mat_humanMelanomaDC <- mat_humanMelanomaDC %>%  
+  as.data.frame() %>% 
+  column_to_rownames('X1') %>% 
+  as.matrix() %>% 
+  t()
+mat_humanMelanomaDC[1:5, 1:5]
 
-usethis::use_data(ref_humanMelanomaDC, compress = "xz", overwrite = TRUE)
+meta_humanMelanomaDC <- read_tsv("ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE137nnn/GSE137710/suppl/GSE137710_human_melanoma_cell_metadata_9315x14.tsv.gz")
+sum(colnames(mat_humanMelanomaDC) %in% meta_humanMelanomaDC$cell_ID)
+ncol(mat_humanMelanomaDC)
 
 #Preprocessing workflow
 melanoma <- CreateSeuratObject(counts = mat_humanMelanomaDC, project = "Melanoma", min.cells = 3, min.features = 200) 
 melanoma
+rm(mat_humanMelanomaDC)
+gc()
 melanoma@assays$RNA@data <- melanoma@assays$RNA@counts
 melanoma[["percent.mt"]] <- PercentageFeatureSet(melanoma, pattern = "^MT")
 head(melanoma@meta.data, 5)
@@ -49,9 +50,9 @@ DimHeatmap(melanoma, dims = 1, cells = 500, balanced = TRUE)
 DimHeatmap(melanoma, dims = 1:15, cells = 500, balanced = TRUE)
 
 #Dimensionality
-melanoma <- JackStraw(melanoma, num.replicate = 100)
-melanoma <- ScoreJackStraw(melanoma, dims = 1:20)
-JackStrawPlot(melanoma, dims = 1:15)
+#melanoma <- JackStraw(melanoma, num.replicate = 100)
+#melanoma <- ScoreJackStraw(melanoma, dims = 1:20)
+#JackStrawPlot(melanoma, dims = 1:15)
 ElbowPlot(melanoma)
 
 #Cluster cells
@@ -88,6 +89,7 @@ meta_humanMelanomaDC <- meta_humanMelanomaDC[reorder_idx, ]
 all(rownames(melanoma@meta.data) == meta_humanMelanomaDC$cell_ID)
 # add major_cell_lineage vector to meta.data
 melanoma@meta.data$annotated <- meta_humanMelanomaDC$major_cell_lineage
+head(melanoma@meta.data$annotated)
 new.cluster.ids <- melanoma@meta.data$annotated
 names(new.cluster.ids) <- levels(melanoma)
 melanoma <- RenameIdents(melanoma, new.cluster.ids)
