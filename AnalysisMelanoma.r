@@ -77,8 +77,18 @@ top10 <- melanoma.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC
 DoHeatmap(melanoma, features = top10$gene) + NoLegend()
 
 #Assigning cell type identity to clusters
+# get shared cell ids
+shared_cell_ids <- intersect(rownames(melanoma@meta.data), meta_humanMelanomaDC$cell_ID)
+# subset meta_humanMelanomaDC
+meta_humanMelanomaDC <- filter(meta_humanMelanomaDC, cell_ID %in% shared_cell_ids)
+# reorder meta_humanMelanomaDC
+reorder_idx <- match(rownames(melanoma@meta.data), meta_humanMelanomaDC$cell_ID)
+meta_humanMelanomaDC <- meta_humanMelanomaDC[reorder_idx, ] 
+# verify reordering
+all(rownames(melanoma@meta.data) == meta_humanMelanomaDC$cell_ID)
+# add major_cell_lineage vector to meta.data
 melanoma@meta.data$annotated <- meta_humanMelanomaDC$major_cell_lineage
-new.cluster.ids <- c(meta_humanMelanomaDC)
+new.cluster.ids <- melanoma@meta.data$annotated
 names(new.cluster.ids) <- levels(melanoma)
 melanoma <- RenameIdents(melanoma, new.cluster.ids)
 DimPlot(melanoma, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
