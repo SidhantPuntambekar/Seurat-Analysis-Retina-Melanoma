@@ -90,6 +90,10 @@ all(rownames(humanSpleen@meta.data) == meta_humanSpleenDC$cell_ID)
 humanSpleen@meta.data$annotated <- meta_humanSpleenDC$cell_type
 head(humanSpleen@meta.data$annotated)
 new.cluster.ids <- humanSpleen@meta.data$annotated
-Idents(melanoma) <- "annotated"
+Idents(humanSpleen) <- "annotated"
 DimPlot(humanSpleen, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
 head(Idents(humanSpleen), 5)
+
+new_ref_matrix <- average_clusters(mat = mat_humanSpleenDC, metadata = humanSpleen@meta.data$annotated, if_log = TRUE)
+head(new_ref_matrix)
+tail(new_ref_matrix)
