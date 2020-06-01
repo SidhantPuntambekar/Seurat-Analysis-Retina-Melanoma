@@ -98,6 +98,6 @@ DimPlot(melanoma, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
 head(Idents(melanoma), 5)
 
 #Reference matrix build
-new_ref_matrix <- seurat_ref(seurat_object = melanoma, cluster_col = "annotated")
+new_ref_matrix <- average_clusters(mat = mat_humanMelanomaDC, metadata = melanoma@meta.data$annotated, if_log = TRUE) #Using clustifyr seurat_ref function
 head(new_ref_matrix)
 tail(new_ref_matrix)
