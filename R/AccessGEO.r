@@ -26,6 +26,7 @@ records <- read.csv(file = "~/scRNA-seq-Practice/data_Records/records.csv")
 head(records)
 for (i in 1:5)
 {
-  GEOquery::getGEOSuppFiles(records[i,1,1], fetch_files = F)
+  print(GEOquery::getGEOSuppFiles(records[i,1,1], fetch_files = F))
+  print(i)
 }
  
